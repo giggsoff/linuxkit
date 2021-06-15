@@ -339,6 +339,9 @@ func (p *Provider) DescriptorWrite(ref *reference.Spec, descriptors ...v1.Descri
 		// we only care about avoiding duplicate arch/OS/Variant
 		descReplace := map[string]v1.Descriptor{}
 		for _, desc := range descriptors {
+			if desc.Platform == nil {
+				continue
+			}
 			descReplace[fmt.Sprintf("%s/%s/%s", desc.Platform.OS, desc.Platform.Architecture, desc.Platform.OSVersion)] = desc
 		}
 		// now we can go through each one and see if it already exists, and, if so, replace it
