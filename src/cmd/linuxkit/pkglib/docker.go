@@ -24,6 +24,7 @@ import (
 const (
 	registryServer      = "https://index.docker.io/v1/"
 	buildkitBuilderName = "linuxkit"
+	buildArgsEnv        = "LK_BUILD_ARGS"
 )
 
 type dockerRunner interface {
@@ -316,6 +317,16 @@ func (dr *dockerRunnerImpl) build(tag, pkg, dockerContext, platform string, stdi
 	}
 
 	args := []string{"buildx", "build"}
+
+	if value, ok := os.LookupEnv(buildArgsEnv); ok {
+		var KVs map[string]string
+		if err := json.Unmarshal([]byte(value), &KVs); err == nil {
+			for k, v := range KVs {
+				args = append(args,
+					[]string{"--build-arg", fmt.Sprintf("%s=%s", k, v)}...)
+			}
+		}
+	}
 
 	for _, proxyVarName := range proxyEnvVars {
 		if value, ok := os.LookupEnv(proxyVarName); ok {
