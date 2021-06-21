@@ -213,6 +213,7 @@ func (p Pkg) Build(bos ...BuildOpt) error {
 	}
 
 	skipBuild := bo.skipBuild
+	var doBuild []string
 	if !bo.force {
 		fmt.Fprintf(writer, "checking for %s in local cache, fallback to remote registry...\n", ref)
 		if _, err := c.ImagePull(&ref, "", arch, false); err == nil {
@@ -234,11 +235,19 @@ func (p Pkg) Build(bos ...BuildOpt) error {
 				fmt.Fprintf(writer, "%s found or pulled\n", curRef)
 			} else {
 				fmt.Fprintf(writer, "%s not found\n", curRef)
+				doBuild = append(doBuild, platform.Architecture)
 			}
+		}
+	} else {
+		for _, platform := range bo.platforms {
+			if platform.Architecture == "" {
+				continue
+			}
+			doBuild = append(doBuild, platform.Architecture)
 		}
 	}
 
-	if !skipBuild {
+	if !skipBuild || len(doBuild) != 0 {
 		fmt.Fprintf(writer, "building %s\n", ref)
 		var (
 			args  []string
@@ -272,13 +281,13 @@ func (p Pkg) Build(bos ...BuildOpt) error {
 		args = append(args, "--label=org.mobyproject.linuxkit.revision="+version.GitCommit)
 
 		// build for each arch and save in the linuxkit cache
-		for _, platform := range bo.platforms {
-			desc, err := p.buildArch(d, c, platform.Architecture, args, writer, bo)
+		for _, arch := range doBuild {
+			desc, err := p.buildArch(d, c, arch, args, writer, bo)
 			if err != nil {
-				return fmt.Errorf("error building for arch %s: %v", platform.Architecture, err)
+				return fmt.Errorf("error building for arch %s: %v", arch, err)
 			}
 			if desc == nil {
-				return fmt.Errorf("no valid descriptor returned for image for arch %s", platform.Architecture)
+				return fmt.Errorf("no valid descriptor returned for image for arch %s", arch)
 			}
 			descs = append(descs, *desc)
 		}
