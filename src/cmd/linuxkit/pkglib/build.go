@@ -457,7 +457,7 @@ func (p Pkg) buildArch(d dockerRunner, c lktspec.CacheProvider, arch string, arg
 	if err != nil {
 		return nil, fmt.Errorf("could not resolve references for image %s: %v", tagArch, err)
 	}
-	_, err = c.IndexWrite(&ref, *desc)
+	_, err = c.DescriptorWrite(&ref, *desc)
 	if err != nil {
 		return nil, fmt.Errorf("could not write index for image %s: %v", tagArch, err)
 	}
