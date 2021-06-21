@@ -221,6 +221,21 @@ func (p Pkg) Build(bos ...BuildOpt) error {
 		} else {
 			fmt.Fprintf(writer, "%s not found\n", ref)
 		}
+		for _, platform := range bo.platforms {
+			if platform.Architecture == "" {
+				continue
+			}
+			curRef, err := reference.Parse(fmt.Sprintf("%s-%s", ref, platform.Architecture))
+			if err != nil {
+				return fmt.Errorf("could not resolve references for image %s: %v", p.Tag(), err)
+			}
+			fmt.Fprintf(writer, "checking for %s in local cache, fallback to remote registry...\n", curRef)
+			if _, err := c.ImagePull(&curRef, "", platform.Architecture, false); err == nil {
+				fmt.Fprintf(writer, "%s found or pulled\n", curRef)
+			} else {
+				fmt.Fprintf(writer, "%s not found\n", curRef)
+			}
+		}
 	}
 
 	if !skipBuild {
