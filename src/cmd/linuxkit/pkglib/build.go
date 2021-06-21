@@ -380,7 +380,7 @@ func (p Pkg) buildArch(d dockerRunner, c lktspec.CacheProvider, arch string, arg
 	fmt.Fprintf(writer, "Building for arch %s as %s\n", arch, tagArch)
 
 	if !bo.force {
-		ref, err := reference.Parse(p.FullTag())
+		ref, err := reference.Parse(tagArch)
 		if err != nil {
 			return nil, fmt.Errorf("could not resolve references for image %s: %v", p.Tag(), err)
 		}
