@@ -233,7 +233,9 @@ func (p *Provider) IndexWrite(ref *reference.Spec, descriptors ...v1.Descriptor)
 		// we only care about avoiding duplicate arch/OS/Variant
 		descReplace := map[string]v1.Descriptor{}
 		for _, desc := range descriptors {
-			descReplace[fmt.Sprintf("%s/%s/%s", desc.Platform.OS, desc.Platform.Architecture, desc.Platform.OSVersion)] = desc
+			if desc.Platform != nil {
+				descReplace[fmt.Sprintf("%s/%s/%s", desc.Platform.OS, desc.Platform.Architecture, desc.Platform.OSVersion)] = desc
+			}
 		}
 		// now we can go through each one and see if it already exists, and, if so, replace it
 		var manifests []v1.Descriptor
